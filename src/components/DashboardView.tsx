@@ -91,7 +91,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Assalamu'alaikum Warahmatullahi Wabarakatuh</span>
             </div>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white">
-              {currentUser.role === 'wali' ? `Ahlan Wa Sahlan, ${currentUser.name}` : `Selamat Bertugas, ${currentUser.name}`}
+              {currentUser.role === 'wali' 
+                ? `Ahlan Wa Sahlan, ${currentUser.displayName || currentUser.name}` 
+                : `Selamat Bertugas, ${currentUser.displayName || currentUser.name}`}
             </h2>
             <p className="text-sm text-emerald-200 mt-1 max-w-2xl">
               Sistem Manajemen Santri Pondok Pesantren Raudhotu Hidayah hari ini, {formatWIBDate(now)} ({getNamaHijriah()}).

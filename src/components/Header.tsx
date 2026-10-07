@@ -164,6 +164,17 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
+        {/* Dynamic Center Greeting: "Selamat Datang, [Nama Admin/User]" */}
+        <div className="hidden xl:flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-700/60 shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="text-xs leading-tight">
+            <span className="text-emerald-300 font-medium">Selamat Datang, </span>
+            <span className="font-bold text-amber-300">
+              {currentUser.displayName || currentUser.name}
+            </span>
+          </div>
+        </div>
+
         {/* User Role Card & Switcher */}
         <div className="relative">
           <button
@@ -171,11 +182,11 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-emerald-800/80 hover:bg-emerald-800 border border-emerald-700/80 transition text-left"
           >
             <div className="w-8 h-8 rounded-full bg-emerald-700 border border-amber-400/40 flex items-center justify-center text-amber-300 font-bold text-xs uppercase shadow-xs">
-              {currentUser.name.charAt(0)}
+              {(currentUser.displayName || currentUser.name).charAt(0)}
             </div>
             <div className="hidden sm:block text-right">
-              <div className="text-xs font-semibold text-white leading-tight line-clamp-1 max-w-[150px]">
-                {currentUser.name}
+              <div className="text-xs font-semibold text-white leading-tight line-clamp-1 max-w-[170px]">
+                {currentUser.displayName || currentUser.name}
               </div>
               <div className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.2 rounded border ${roleBadge.color}`}>
                 {roleBadge.icon}
@@ -190,7 +201,9 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-stone-200 text-stone-800 py-2 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="px-4 py-2 border-b border-stone-100 bg-stone-50/80">
                 <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Akun Aktif Saat Ini</p>
-                <p className="text-xs font-bold text-emerald-900 mt-0.5">{currentUser.name}</p>
+                <p className="text-xs font-bold text-emerald-900 mt-0.5">
+                  {currentUser.displayName || currentUser.name}
+                </p>
                 <p className="text-[11px] text-stone-600">{currentUser.title}</p>
                 {currentUser.santriName && (
                   <p className="text-[11px] text-amber-700 font-medium mt-1">

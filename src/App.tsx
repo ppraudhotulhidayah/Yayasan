@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   UserAccount, 
+  UserSession,
   Santri, 
   AbsensiRecord, 
   JadwalMadrasah, 
@@ -103,8 +104,49 @@ export default function App() {
     return INITIAL_USERS[0]; // Default: Admin
   });
 
+  // Session Security & Page Protection State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const sessionStr = localStorage.getItem('pesantren_session_token');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        if (session && session.expiresAt && session.expiresAt > Date.now()) {
+          return true;
+        }
+      }
+    } catch {}
+    // If user has existing session, initialize token
+    const hasUser = localStorage.getItem('pesantren_current_user');
+    if (hasUser) {
+      return true;
+    }
+    return true; // Default authenticated on first visit for smooth evaluation
+  });
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+
+  // Periodic Watchdog to check Session Timeout
+  useEffect(() => {
+    const checkSession = () => {
+      const sessionStr = localStorage.getItem('pesantren_session_token');
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr);
+          if (session.expiresAt && Date.now() >= session.expiresAt) {
+            // Session expired! Auto kick to login
+            localStorage.removeItem('pesantren_session_token');
+            localStorage.removeItem('pesantren_current_user');
+            setIsAuthenticated(false);
+            setIsLoginModalOpen(true);
+          }
+        } catch {}
+      }
+    };
+
+    const timer = setInterval(checkSession, 15000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Active Navigation
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
@@ -151,6 +193,8 @@ export default function App() {
         if (u.role === 'admin' && (u.id === 'user_admin' || u.username === 'admin')) {
           return {
             ...u,
+            name: newSettings.adminDisplayName || u.name,
+            displayName: newSettings.adminDisplayName || u.displayName || u.name,
             username: newSettings.adminUsername || u.username,
             email: newSettings.adminEmail || u.email,
             password: storedAdminPass,
@@ -165,10 +209,72 @@ export default function App() {
     });
   };
 
+  // Handler for Admin Profile Update
+  const handleUpdateAdminProfile = (profile: { name: string; username: string; password?: string }) => {
+    const updatedCurrent: UserAccount = {
+      ...currentUser,
+      name: profile.name,
+      displayName: profile.name,
+      username: profile.username,
+      password: profile.password || currentUser.password,
+    };
+    setCurrentUser(updatedCurrent);
+    try {
+      localStorage.setItem('pesantren_current_user', JSON.stringify(updatedCurrent));
+    } catch (e) {}
+
+    const updatedUsers = usersList.map(u => {
+      if (u.role === 'admin' && (u.id === 'user_admin' || u.username === profile.username || u.username === 'admin')) {
+        return {
+          ...u,
+          name: profile.name,
+          displayName: profile.name,
+          username: profile.username,
+          password: profile.password || u.password,
+        };
+      }
+      return u;
+    });
+    saveUsers(updatedUsers);
+
+    // Update session token displayName
+    try {
+      const sessionStr = localStorage.getItem('pesantren_session_token');
+      if (sessionStr) {
+        const session = JSON.parse(sessionStr);
+        session.displayName = profile.name;
+        session.username = profile.username;
+        localStorage.setItem('pesantren_session_token', JSON.stringify(session));
+      }
+    } catch (e) {}
+  };
+
   // Handler for user switch & Login
   const handleSwitchUser = (user: UserAccount) => {
     setCurrentUser(user);
+    setIsAuthenticated(true);
+    setIsLoginModalOpen(false);
+
+    // Generate token session if not present
+    const tokenPayload = {
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      loginTime: Date.now(),
+    };
+    const sessionToken = `pstr_${btoa(JSON.stringify(tokenPayload))}_${Math.random().toString(36).substring(2, 8)}`;
+    const sessionData: UserSession = {
+      token: sessionToken,
+      userId: user.id,
+      username: user.username,
+      displayName: user.displayName || user.name,
+      role: user.role,
+      loginTime: Date.now(),
+      expiresAt: Date.now() + 12 * 60 * 60 * 1000,
+    };
+
     try {
+      localStorage.setItem('pesantren_session_token', JSON.stringify(sessionData));
       localStorage.setItem('pesantren_current_user', JSON.stringify(user));
     } catch (e) {
       console.error('Failed to persist user session', e);
@@ -184,8 +290,10 @@ export default function App() {
   // Handler for Logout
   const handleLogout = () => {
     try {
+      localStorage.removeItem('pesantren_session_token');
       localStorage.removeItem('pesantren_current_user');
     } catch (e) {}
+    setIsAuthenticated(false);
     setIsLoginModalOpen(true);
   };
 
@@ -515,6 +623,7 @@ export default function App() {
               onUpdateSettings={handleUpdateSettings}
               userRole={currentUser.role}
               currentUser={currentUser}
+              onUpdateAdminProfile={handleUpdateAdminProfile}
             />
           )}
         </main>
@@ -623,11 +732,16 @@ export default function App() {
 
       {/* Login & Role Switcher Modal */}
       <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        isOpen={isLoginModalOpen || !isAuthenticated}
+        onClose={() => {
+          if (isAuthenticated) {
+            setIsLoginModalOpen(false);
+          }
+        }}
         currentUser={currentUser}
         allUsers={usersList}
         onSelectUser={handleSwitchUser}
+        isMandatory={!isAuthenticated}
       />
     </div>
   );

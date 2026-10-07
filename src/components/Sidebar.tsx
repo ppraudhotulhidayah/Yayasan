@@ -245,10 +245,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80 shadow-2xs">
               <div className="flex items-center gap-2 overflow-hidden">
                 <div className="w-8 h-8 rounded-full bg-emerald-800 text-amber-300 font-bold flex items-center justify-center text-xs shrink-0">
-                  {currentUser.name.charAt(0)}
+                  {(currentUser.displayName || currentUser.name).charAt(0)}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-stone-800 truncate">{currentUser.name}</div>
+                  <div className="text-xs font-bold text-stone-800 truncate">
+                    {currentUser.displayName || currentUser.name}
+                  </div>
                   <div className="text-[10px] text-stone-500 font-mono truncate">@{currentUser.username}</div>
                 </div>
               </div>

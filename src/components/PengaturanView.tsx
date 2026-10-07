@@ -27,6 +27,7 @@ interface PengaturanViewProps {
   onUpdateSettings: (newSettings: LembagaSettings) => void;
   userRole: RoleType;
   currentUser: UserAccount;
+  onUpdateAdminProfile?: (profile: { name: string; username: string; password?: string }) => void;
 }
 
 export const PengaturanView: React.FC<PengaturanViewProps> = ({
@@ -34,11 +35,17 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
   onUpdateSettings,
   userRole,
   currentUser,
+  onUpdateAdminProfile,
 }) => {
   const [activeTab, setActiveTab] = useState<'identitas' | 'keamanan'>('identitas');
 
   // Form State for Lembaga
   const [formData, setFormData] = useState<LembagaSettings>({ ...settings });
+
+  // Form State for Admin Profile Display Name
+  const [adminDisplayName, setAdminDisplayName] = useState<string>(
+    currentUser.displayName || currentUser.name || settings.adminDisplayName || 'Ustadz H. Ahmad Muzammil, S.Pd.I'
+  );
 
   // Form State for Admin Password
   const [passwordData, setPasswordData] = useState({
@@ -108,7 +115,7 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
     showFeedback('success', 'Identitas lembaga dan kop surat resmi berhasil disimpan dan diperbarui secara reaktif.');
   };
 
-  // Save Keamanan Admin
+  // Save Keamanan Admin & Profil
   const handleSaveSecurity = (e: React.FormEvent) => {
     e.preventDefault();
     if (userRole !== 'admin') {
@@ -116,20 +123,31 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
       return;
     }
 
-    // Check if password change is attempted
-    if (passwordData.newPassword || passwordData.confirmPassword || passwordData.currentPassword) {
-      if (!passwordData.currentPassword) {
-        showFeedback('error', 'Harap masukkan password saat ini untuk verifikasi keamanan.');
-        return;
-      }
+    if (!adminDisplayName.trim()) {
+      showFeedback('error', 'Nama Lengkap / Tampilan Admin tidak boleh kosong.');
+      return;
+    }
 
-      // Check stored password in localStorage, default is "admin123"
-      const storedPass = localStorage.getItem('pesantren_admin_password') || 'admin123';
-      if (passwordData.currentPassword !== storedPass) {
-        showFeedback('error', 'Password saat ini tidak cocok! (Default: admin123)');
-        return;
-      }
+    if (!formData.adminUsername.trim()) {
+      showFeedback('error', 'Username Admin tidak boleh kosong.');
+      return;
+    }
 
+    // Password Saat Ini wajib dimasukkan sebagai verifikasi keamanan
+    if (!passwordData.currentPassword) {
+      showFeedback('error', 'Harap masukkan Password Saat Ini sebagai verifikasi keamanan sebelum menyimpan perubahan.');
+      return;
+    }
+
+    // Check stored password in localStorage, default is "admin123"
+    const storedPass = localStorage.getItem('pesantren_admin_password') || currentUser.password || 'admin123';
+    if (passwordData.currentPassword !== storedPass) {
+      showFeedback('error', 'Password saat ini tidak cocok! Verifikasi keamanan gagal.');
+      return;
+    }
+
+    // Check if new password is being set
+    if (passwordData.newPassword || passwordData.confirmPassword) {
       if (passwordData.newPassword.length < 6) {
         showFeedback('error', 'Password baru minimal harus 6 karakter.');
         return;
@@ -144,15 +162,24 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
       localStorage.setItem('pesantren_admin_password', passwordData.newPassword);
     }
 
-    // Update admin username/email
-    const updated = {
+    // Update admin username/email/displayName in settings
+    const updated: LembagaSettings = {
       ...formData,
-      adminUsername: formData.adminUsername.trim() || 'admin_raudhotu',
+      adminDisplayName: adminDisplayName.trim(),
+      adminUsername: formData.adminUsername.trim() || 'admin',
       adminEmail: formData.adminEmail.trim() || 'admin@raudhotulhidayah.ponpes.id',
     };
 
     setFormData(updated);
     onUpdateSettings(updated);
+
+    if (onUpdateAdminProfile) {
+      onUpdateAdminProfile({
+        name: adminDisplayName.trim(),
+        username: formData.adminUsername.trim(),
+        password: passwordData.newPassword || undefined,
+      });
+    }
 
     setPasswordData({
       currentPassword: '',
@@ -160,7 +187,7 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
       confirmPassword: '',
     });
 
-    showFeedback('success', 'Kredensial dan pengaturan keamanan Admin berhasil diperbarui!');
+    showFeedback('success', `Profil & Kredensial Admin "${adminDisplayName.trim()}" berhasil diperbarui! Perubahan langsung aktif di seluruh sistem.`);
   };
 
   // Reset to default
@@ -602,6 +629,28 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
               </h3>
 
               <form onSubmit={handleSaveSecurity} className="space-y-4 text-xs">
+                {/* Field: Nama Lengkap / Display Name Admin */}
+                <div>
+                  <label className="block font-semibold text-stone-700 mb-1">
+                    Nama Lengkap / Nama Tampilan Admin (Display Name):
+                  </label>
+                  <div className="relative">
+                    <User className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      disabled={!isAdmin}
+                      value={adminDisplayName}
+                      onChange={(e) => setAdminDisplayName(e.target.value)}
+                      placeholder="Contoh: Kiai / Ustadz Ahmad Muzammil, S.Pd.I"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-emerald-600 font-semibold text-stone-800 disabled:bg-stone-100 disabled:text-stone-500"
+                      required
+                    />
+                  </div>
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    Nama ini akan langsung tampil di salam header "Selamat Datang, [Nama Admin]", kartu profil, dan seluruh laporan santri.
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold text-stone-700 mb-1">
@@ -614,7 +663,7 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
                         disabled={!isAdmin}
                         value={formData.adminUsername}
                         onChange={(e) => setFormData({ ...formData, adminUsername: e.target.value })}
-                        placeholder="admin_raudhotu"
+                        placeholder="admin"
                         className="w-full pl-9 pr-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:outline-emerald-600 font-mono disabled:bg-stone-100 disabled:text-stone-500"
                         required
                       />

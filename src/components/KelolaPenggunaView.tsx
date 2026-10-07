@@ -181,6 +181,7 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
       const updated: UserAccount = {
         ...editingUser,
         name: guruForm.name,
+        displayName: guruForm.name,
         nip: guruForm.nip,
         mapel: guruForm.mapel,
         username: guruForm.username,
@@ -190,11 +191,12 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
         password: guruForm.password || editingUser.password,
       };
       onUpdateUser(updated);
-      showToast('success', `Data akun guru "${updated.name}" berhasil diperbarui.`);
+      showToast('success', `Data akun guru "${updated.displayName || updated.name}" berhasil diperbarui.`);
     } else {
       const newUser: UserAccount = {
         id: `user_guru_${Date.now()}`,
         name: guruForm.name,
+        displayName: guruForm.name,
         nip: guruForm.nip,
         mapel: guruForm.mapel,
         username: guruForm.username,
@@ -206,7 +208,7 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
       };
       onAddUser(newUser);
-      showToast('success', `Akun guru baru "${newUser.name}" berhasil ditambahkan.`);
+      showToast('success', `Akun guru baru "${newUser.displayName || newUser.name}" berhasil ditambahkan.`);
     }
 
     setModalType(null);
@@ -238,6 +240,7 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
       const updated: UserAccount = {
         ...editingUser,
         name: waliForm.name,
+        displayName: waliForm.name,
         username: waliForm.username,
         email: waliForm.email || `${waliForm.username}@gmail.com`,
         noHp: waliForm.noHp,
@@ -247,11 +250,12 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
         password: waliForm.password || editingUser.password,
       };
       onUpdateUser(updated);
-      showToast('success', `Data akun wali santri "${updated.name}" berhasil diperbarui.`);
+      showToast('success', `Data akun wali santri "${updated.displayName || updated.name}" berhasil diperbarui.`);
     } else {
       const newUser: UserAccount = {
         id: `user_wali_${Date.now()}`,
         name: waliForm.name,
+        displayName: waliForm.name,
         username: waliForm.username,
         email: waliForm.email || `${waliForm.username}@gmail.com`,
         noHp: waliForm.noHp,
@@ -263,7 +267,7 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
       };
       onAddUser(newUser);
-      showToast('success', `Akun wali santri baru "${newUser.name}" berhasil ditambahkan.`);
+      showToast('success', `Akun wali santri baru "${newUser.displayName || newUser.name}" berhasil ditambahkan.`);
     }
 
     setModalType(null);
@@ -463,7 +467,7 @@ export const KelolaPenggunaView: React.FC<KelolaPenggunaViewProps> = ({
                         </div>
                         <div>
                           <div className="font-bold text-stone-900 text-sm flex items-center gap-1.5">
-                            <span>{u.name}</span>
+                            <span>{u.displayName || u.name}</span>
                             {isCurrentAdmin && (
                               <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded font-bold uppercase">
                                 Anda

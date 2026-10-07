@@ -16,6 +16,7 @@ export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user_admin',
     name: 'Ustadz H. Ahmad Muzammil, S.Pd.I',
+    displayName: 'Ustadz H. Ahmad Muzammil, S.Pd.I',
     username: 'admin',
     password: 'admin123',
     email: 'admin@raudhotulhidayah.ponpes.id',
@@ -28,6 +29,7 @@ export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user_guru1',
     name: 'Ustadz Ridwan Al-Bantani, Lc.',
+    displayName: 'Ustadz Ridwan Al-Bantani, Lc.',
     username: 'guru1',
     password: 'guru123',
     email: 'ridwan@raudhotulhidayah.ponpes.id',
@@ -41,6 +43,7 @@ export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user_guru2',
     name: 'Ustadz M. Nur Huda, Al-Hafidz',
+    displayName: 'Ustadz M. Nur Huda, Al-Hafidz',
     username: 'guru2',
     password: 'guru123',
     email: 'nurhuda@raudhotulhidayah.ponpes.id',
@@ -54,6 +57,7 @@ export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user_wali1',
     name: 'Bpk. H. Syamsuddin Nur',
+    displayName: 'Bpk. H. Syamsuddin Nur',
     username: 'wali1',
     password: 'wali123',
     email: 'syamsuddin@gmail.com',
@@ -67,6 +71,7 @@ export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'user_wali2',
     name: 'Bpk. Drs. H. Mulyadi',
+    displayName: 'Bpk. Drs. H. Mulyadi',
     username: 'wali2',
     password: 'wali123',
     email: 'mulyadi@gmail.com',
@@ -811,5 +816,6 @@ export const INITIAL_SETTINGS = {
   logoUrl: '',
   adminUsername: 'admin_raudhotu',
   adminEmail: 'admin@raudhotulhidayah.ponpes.id',
+  adminDisplayName: 'Ustadz H. Ahmad Muzammil, S.Pd.I',
 };
 

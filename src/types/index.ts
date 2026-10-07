@@ -3,6 +3,7 @@ export type RoleType = 'admin' | 'guru' | 'wali';
 export interface UserAccount {
   id: string;
   name: string;
+  displayName?: string; // Display Name / Nama Lengkap Admin & Pengguna
   username: string;
   password?: string;
   email: string;
@@ -14,6 +15,16 @@ export interface UserAccount {
   avatar?: string;
   santriId?: string; // For Wali Santri, associated student
   santriName?: string;
+}
+
+export interface UserSession {
+  token: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  role: RoleType;
+  loginTime: number;
+  expiresAt: number;
 }
 
 export type StatusKehadiran = 'Hadir' | 'Telat' | 'Izin' | 'Sakit' | 'Pulang' | 'Alfa';
@@ -172,4 +183,5 @@ export interface LembagaSettings {
   logoUrl?: string; // URL or Base64 data string
   adminUsername: string;
   adminEmail: string;
+  adminDisplayName?: string;
 }
